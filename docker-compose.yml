@@ -1,0 +1,45 @@
+###############################################################################
+#                          Generated on phpdocker.io                          #
+###############################################################################
+version: '3.1'
+services:
+  mysql:
+    image: mysql:5.6
+    container_name: php-5-6-test-mysql
+    working_dir: /www
+    restart: always
+    volumes:
+      - .:/www
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=sunstarfoundation
+      - MYSQL_USER=sunstar
+      - MYSQL_PASSWORD=root
+    ports:
+      - '5002:3306'
+
+  webserver:
+    image: nginx:alpine
+    container_name: php-5-6-test-webserver
+    working_dir: /www
+    volumes:
+      - .:/www
+      - ./phpdocker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - '5000:80'
+    links:
+      - mysql
+      - 'mysql:database'
+    depends_on:
+      - mysql
+
+  php-fpm:
+    build: phpdocker/php-fpm
+    container_name: php-5-6-test-php-fpm
+    working_dir: /www
+    volumes:
+      - .:/www
+      - ./phpdocker/php-fpm/php-ini-overrides.ini:/etc/php5/fpm/conf.d/99-overrides.ini
+    links:
+      - 'mysql'
+      - 'mysql:database'
